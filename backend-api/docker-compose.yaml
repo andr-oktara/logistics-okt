@@ -1,0 +1,45 @@
+version: '3.4'
+services:
+  restapi:
+    container_name: okt_api_container
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      args:
+        - API_PORT=${API_PORT}
+    ports:
+      - ${API_PORT}:${API_PORT}
+    env_file:
+      - .env
+    environment:
+      - RUN_MIGRATIONS=true
+    depends_on:
+      - postgres
+    networks:
+      - fullstack
+    volumes:
+      - ./:/usr/local/apps/restapi/dev
+      - exclude:/usr/local/apps/restapi/dev/node_modules/
+    mem_limit: "2GB"
+  postgres:
+    image: postgres:14-alpine
+    container_name: okt_pgsql_db_server
+    mem_limit: "2GB"
+    environment:
+      POSTGRES_USER: okt_pgsql_user
+      POSTGRES_PASSWORD: okt_pgsql_password
+      POSTGRES_DB: okt_pgsql_db
+    ports:
+      - '5432:5432'
+    volumes:
+      - database_postgres:/var/lib/postgresql/data
+    networks:
+      - fullstack
+volumes:
+  exclude:
+  database_postgres:
+  test_database_postgres:
+networks:
+  fullstack:
+    driver: bridge
